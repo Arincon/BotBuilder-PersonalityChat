@@ -36,6 +36,7 @@ namespace Microsoft.Bot.Builder.PersonalityChat
     using System;
     using System.Linq;
     using System.Net.Http;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Bot.Builder.PersonalityChat.Core;
     using Microsoft.Bot.Schema;
@@ -52,7 +53,7 @@ namespace Microsoft.Bot.Builder.PersonalityChat
             this.personalityChatService = new PersonalityChatService(personalityChatMiddlewareOptions);
         }
 
-        public async Task OnTurn(ITurnContext context, MiddlewareSet.NextDelegate next)
+        public async Task OnTurnAsync(ITurnContext context, NextDelegate next, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (context.Activity.Type == ActivityTypes.Message)
             {
@@ -75,7 +76,7 @@ namespace Microsoft.Bot.Builder.PersonalityChat
                 return;
             }
 
-            await next().ConfigureAwait(false);
+            await next(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual string GetResponse(PersonalityChatResults personalityChatResults)
@@ -100,11 +101,11 @@ namespace Microsoft.Bot.Builder.PersonalityChat
             return response;
         }
 
-        public virtual async Task PostPersonalityChatResponseToUser(ITurnContext context, MiddlewareSet.NextDelegate next, string personalityChatResponse)
+        public virtual async Task PostPersonalityChatResponseToUser(ITurnContext context, NextDelegate next, string personalityChatResponse)
         {
             if (!string.IsNullOrEmpty(personalityChatResponse))
             {
-                await context.SendActivity(personalityChatResponse).ConfigureAwait(false);
+                await context.SendActivityAsync(personalityChatResponse).ConfigureAwait(false);
             }
         }
     }
